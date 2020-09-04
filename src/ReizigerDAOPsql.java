@@ -126,13 +126,13 @@ public class ReizigerDAOPsql implements ReizigerDAO {
             List<Reiziger> lijst = new ArrayList<>();
 
             while (rs.next()) {
-                int reiziger_id = rs.getInt(1);
+                int id = rs.getInt(1);
                 String voorletter = rs.getString(2);
                 String tussenvoegsel = rs.getString(3);
                 String achternaam = rs.getString(4);
                 Date geboortedatum = rs.getDate(5);
 
-                Reiziger r = new Reiziger(reiziger_id, voorletter, tussenvoegsel, achternaam, geboortedatum);
+                Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
 
                 lijst.add(r);
             }
@@ -162,13 +162,13 @@ public class ReizigerDAOPsql implements ReizigerDAO {
             List<Reiziger> lijst = new ArrayList<>();
 
             while (rs.next()) {
-                int reiziger_id = rs.getInt(1);
+                int id = rs.getInt(1);
                 String voorletter = rs.getString(2);
                 String tussenvoegsel = rs.getString(3);
                 String achternaam = rs.getString(4);
                 Date geboortedatum = rs.getDate(5);
 
-                Reiziger r = new Reiziger(reiziger_id, voorletter, tussenvoegsel, achternaam, geboortedatum);
+                Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
 
                 lijst.add(r);
             }

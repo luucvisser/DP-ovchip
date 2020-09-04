@@ -1,4 +1,5 @@
 import java.sql.Date;
+import java.util.List;
 
 public class Reiziger {
     private int id;
@@ -7,12 +8,23 @@ public class Reiziger {
     private String achternaam;
     private Date geboortedatum;
 
+    private Adres adres;
+
     public Reiziger(int id, String voorletters, String tussenvoegsel, String achternaam, Date geboortedatum) {
         this.id = id;
         this.voorletters = voorletters;
         this.tussenvoegsel = tussenvoegsel;
         this.achternaam = achternaam;
         this.geboortedatum = geboortedatum;
+
+        AdresDAOPsql adao = new AdresDAOPsql();
+        List<Adres> adresLijst = adao.findAll();
+
+        for (var a : adresLijst) {
+            if (a.getReiziger_id() == id) {
+                this.adres = a;
+            }
+        }
     }
 
     public int getId() {
@@ -63,6 +75,10 @@ public class Reiziger {
             tussenvoegsel += " ";
         }
 
+        if (adres != null) {
+            return  "Reiziger " + id + ": " + voorletters + ". " + tussenvoegsel + achternaam + " (" + geboortedatum + "), woont op " +
+                    "adres " + adres.getId() + ": " + adres.getStraat() + " " + adres.getHuisnummer() + ", " + adres.getPostcode() + ", " + adres.getWoonplaats();
+        }
         return "Reiziger " + id + ": " + voorletters + ". " + tussenvoegsel + achternaam + " (" + geboortedatum + ")";
     }
 }
