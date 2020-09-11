@@ -1,187 +1,189 @@
-import dbconnection.DBConnection;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ReizigerDAOPsql implements ReizigerDAO {
-    private Connection connection;
+    protected Connection connection;
 
-    @Override
-    public boolean save(Reiziger reiziger) {
-        try {
-            this.connection = DBConnection.getConnection();
-
-            int id = reiziger.getId();
-            String voorletters = reiziger.getVoorletters();
-            String tussenvoegsel = reiziger.getTussenvoegsel();
-            String achternaam = reiziger.getAchternaam();
-            Date geboortedatum = reiziger.getGeboortedatum();
-
-            Statement stmt = connection.createStatement();
-
-            stmt.executeUpdate("INSERT INTO reiziger (reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum) VALUES (" + id + ", '" + voorletters + "', '" + tussenvoegsel + "', '" + achternaam + "', '" + geboortedatum + "')");
-
-            connection.close();
-            stmt.close();
-
-            return true;
-        }
-        catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return false;
+    public ReizigerDAOPsql(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
-    public boolean update(Reiziger reiziger) {
-        try {
-            this.connection = DBConnection.getConnection();
+    public boolean save(Reiziger reiziger) throws SQLException {
+        int id = reiziger.getId();
+        String voorletters = reiziger.getVoorletters();
+        String tussenvoegsel = reiziger.getTussenvoegsel();
+        String achternaam = reiziger.getAchternaam();
+        Date geboortedatum = reiziger.getGeboortedatum();
 
-            int id = reiziger.getId();
-            String voorletters = reiziger.getVoorletters();
-            String tussenvoegsel = reiziger.getTussenvoegsel();
-            String achternaam = reiziger.getAchternaam();
-            Date geboortedatum = reiziger.getGeboortedatum();
+        Statement stmt = connection.createStatement();
 
-            Statement stmt = connection.createStatement();
+        stmt.executeUpdate("INSERT INTO reiziger (reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum) VALUES (" + id + ", '" + voorletters + "', '" + tussenvoegsel + "', '" + achternaam + "', '" + geboortedatum + "')");
 
-            stmt.executeUpdate("UPDATE reiziger SET reiziger_id = " + id + ", voorletters = '" + voorletters + "', tussenvoegsel = '" + tussenvoegsel + "', achternaam = '" + achternaam + "', geboortedatum = '" + geboortedatum + "' WHERE reiziger_id = " + id);
 
-            connection.close();
-            stmt.close();
+        AdresDAOPsql adao = new AdresDAOPsql(connection);
+        Adres adres = adao.findByReiziger(reiziger);
+        reiziger.setAdres(adres);
 
-            return true;
+        OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+        List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(reiziger);
+        for (OVChipkaart ov : OVChipkaarten) {
+            reiziger.setOVChipkaarten(ov);
         }
-        catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return false;
+
+        stmt.close();
+
+        return true;
     }
 
     @Override
-    public boolean delete(Reiziger reiziger) {
-        try {
-            this.connection = DBConnection.getConnection();
+    public boolean update(Reiziger reiziger) throws SQLException {
+        int id = reiziger.getId();
+        String voorletters = reiziger.getVoorletters();
+        String tussenvoegsel = reiziger.getTussenvoegsel();
+        String achternaam = reiziger.getAchternaam();
+        Date geboortedatum = reiziger.getGeboortedatum();
 
-            int id = reiziger.getId();
+        Statement stmt = connection.createStatement();
 
-            Statement stmt = connection.createStatement();
+        stmt.executeUpdate("UPDATE reiziger SET reiziger_id = " + id + ", voorletters = '" + voorletters + "', tussenvoegsel = '" + tussenvoegsel + "', achternaam = '" + achternaam + "', geboortedatum = '" + geboortedatum + "' WHERE reiziger_id = " + id);
 
-            stmt.executeUpdate("DELETE FROM reiziger WHERE reiziger_id = " + id);
+        AdresDAOPsql adao = new AdresDAOPsql(connection);
+        Adres adres = adao.findByReiziger(reiziger);
+        reiziger.setAdres(adres);
 
-            connection.close();
-            stmt.close();
-
-            return true;
+        OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+        List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(reiziger);
+        for (OVChipkaart ov : OVChipkaarten) {
+            reiziger.setOVChipkaarten(ov);
         }
-        catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return false;
+
+        stmt.close();
+
+        return true;
     }
 
     @Override
-    public Reiziger findById(int id) {
-        try {
-            this.connection = DBConnection.getConnection();
+    public boolean delete(Reiziger reiziger) throws SQLException {
+        int id = reiziger.getId();
 
-            String query = "SELECT * FROM reiziger WHERE reiziger_id = " + id;
+        Statement stmt = connection.createStatement();
 
-            PreparedStatement ps = connection.prepareStatement(query);
-            ResultSet rs = ps.executeQuery();
+        stmt.executeUpdate("DELETE FROM reiziger WHERE reiziger_id = " + id);
 
-            if (rs.next()) {
-                int reiziger_id = rs.getInt(1);
-                String voorletter = rs.getString(2);
-                String tussenvoegsel = rs.getString(3);
-                String achternaam = rs.getString(4);
-                Date geboortedatum = rs.getDate(5);
+        stmt.close();
 
-                Reiziger r = new Reiziger(reiziger_id, voorletter, tussenvoegsel, achternaam, geboortedatum);
-
-                connection.close();
-                ps.close();
-                rs.close();
-
-                return r;
-            }
-        }
-        catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return null;
+        return true;
     }
 
     @Override
-    public List<Reiziger> findByGbdatum(String datum) {
-        try {
-            this.connection = DBConnection.getConnection();
+    public Reiziger findById(int id) throws SQLException {
+        String query = "SELECT * FROM reiziger WHERE reiziger_id = " + id;
 
-            String query = "SELECT * FROM reiziger WHERE geboortedatum = '" + datum + "'";
+        PreparedStatement ps = connection.prepareStatement(query);
+        ResultSet rs = ps.executeQuery();
 
-            PreparedStatement ps = connection.prepareStatement(query);
-            ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            int reiziger_id = rs.getInt(1);
+            String voorletter = rs.getString(2);
+            String tussenvoegsel = rs.getString(3);
+            String achternaam = rs.getString(4);
+            Date geboortedatum = rs.getDate(5);
 
-            List<Reiziger> lijst = new ArrayList<>();
+            Reiziger r = new Reiziger(reiziger_id, voorletter, tussenvoegsel, achternaam, geboortedatum);
 
-            while (rs.next()) {
-                int id = rs.getInt(1);
-                String voorletter = rs.getString(2);
-                String tussenvoegsel = rs.getString(3);
-                String achternaam = rs.getString(4);
-                Date geboortedatum = rs.getDate(5);
+            AdresDAOPsql adao = new AdresDAOPsql(connection);
+            Adres adres = adao.findByReiziger(r);
+            r.setAdres(adres);
 
-                Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
-
-                lijst.add(r);
+            OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+            List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(r);
+            for (OVChipkaart ov : OVChipkaarten) {
+                r.setOVChipkaarten(ov);
             }
 
-            connection.close();
             ps.close();
             rs.close();
 
-            return lijst;
+            return r;
         }
-        catch (SQLException e) {
-            System.out.println(e.toString());
+        else {
+                return null;
         }
-        return null;
     }
 
     @Override
-    public List<Reiziger> findAll() {
-        try {
-            this.connection = DBConnection.getConnection();
+    public List<Reiziger> findByGbdatum(String datum) throws SQLException {
+        String query = "SELECT * FROM reiziger WHERE geboortedatum = '" + datum + "'";
 
-            String query = "SELECT * FROM reiziger";
+        PreparedStatement ps = connection.prepareStatement(query);
+        ResultSet rs = ps.executeQuery();
 
-            PreparedStatement ps = connection.prepareStatement(query);
-            ResultSet rs = ps.executeQuery();
+        List<Reiziger> lijst = new ArrayList<>();
 
-            List<Reiziger> lijst = new ArrayList<>();
+        while (rs.next()) {
+            int id = rs.getInt(1);
+            String voorletter = rs.getString(2);
+            String tussenvoegsel = rs.getString(3);
+            String achternaam = rs.getString(4);
+            Date geboortedatum = rs.getDate(5);
 
-            while (rs.next()) {
-                int id = rs.getInt(1);
-                String voorletter = rs.getString(2);
-                String tussenvoegsel = rs.getString(3);
-                String achternaam = rs.getString(4);
-                Date geboortedatum = rs.getDate(5);
+            Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
 
-                Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
+            AdresDAOPsql adao = new AdresDAOPsql(connection);
+            Adres adres = adao.findByReiziger(r);
+            r.setAdres(adres);
 
-                lijst.add(r);
+            OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+            List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(r);
+            for (OVChipkaart ov : OVChipkaarten) {
+                r.setOVChipkaarten(ov);
             }
 
-            connection.close();
-            ps.close();
-            rs.close();
+            lijst.add(r);
+        }
 
-            return lijst;
+        ps.close();
+        rs.close();
+
+        return lijst;
+    }
+
+    @Override
+    public List<Reiziger> findAll() throws SQLException {
+        String query = "SELECT * FROM reiziger";
+
+        PreparedStatement ps = connection.prepareStatement(query);
+        ResultSet rs = ps.executeQuery();
+
+        List<Reiziger> lijst = new ArrayList<>();
+
+        while (rs.next()) {
+            int id = rs.getInt(1);
+            String voorletter = rs.getString(2);
+            String tussenvoegsel = rs.getString(3);
+            String achternaam = rs.getString(4);
+            Date geboortedatum = rs.getDate(5);
+
+            Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
+
+            AdresDAOPsql adao = new AdresDAOPsql(connection);
+            Adres adres = adao.findByReiziger(r);
+            r.setAdres(adres);
+
+            OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+            List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(r);
+            for (OVChipkaart ov : OVChipkaarten) {
+                r.setOVChipkaarten(ov);
+            }
+
+            lijst.add(r);
         }
-        catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return null;
+
+        ps.close();
+        rs.close();
+
+        return lijst;
     }
 }

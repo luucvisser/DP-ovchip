@@ -1,4 +1,4 @@
-import java.util.List;
+import java.sql.SQLException;
 
 public class Adres {
     private int id;
@@ -6,15 +6,17 @@ public class Adres {
     private String huisnummer;
     private String straat;
     private String woonplaats;
-    private int reiziger_id;
 
-    public Adres(int id, String postcode, String huisnummer, String straat, String woonplaats, int reiziger_id) {
+    private Reiziger reiziger;
+
+    public Adres(int id, String postcode, String huisnummer, String straat, String woonplaats, Reiziger reiziger) throws SQLException {
         this.id = id;
         this.postcode = postcode;
         this.huisnummer = huisnummer;
         this.straat = straat;
         this.woonplaats = woonplaats;
-        this.reiziger_id = reiziger_id;
+
+        this.reiziger = reiziger;
     }
 
     public int getId() {
@@ -37,8 +39,8 @@ public class Adres {
         return woonplaats;
     }
 
-    public int getReiziger_id() {
-        return reiziger_id;
+    public Reiziger getReiziger() {
+        return reiziger;
     }
 
     public void setId(int id) {
@@ -61,30 +63,20 @@ public class Adres {
         this.woonplaats = woonplaats;
     }
 
-    public void setReiziger_id(int reiziger_id) {
-        this.reiziger_id = reiziger_id;
+    public void setReiziger(Reiziger reiziger) {
+        this.reiziger = reiziger;
     }
 
     public String toString() {
-        ReizigerDAOPsql rdao = new ReizigerDAOPsql();
-        List<Reiziger> reizigerLijst = rdao.findAll();
+        String tussenvoegsel = reiziger.getTussenvoegsel();
 
-        for (var r : reizigerLijst) {
-            if (r.getId() == reiziger_id) {
-
-                String tussenvoegsel = r.getTussenvoegsel();
-
-                if (tussenvoegsel == null) {
-                    tussenvoegsel = "";
-                }
-                else {
-                    tussenvoegsel = r.getTussenvoegsel() + " ";
-                }
-
-                return  "Reiziger " + r.getId() + ": " + r.getVoorletters() + ". " + tussenvoegsel + r.getAchternaam() + " (" + r.getGeboortedatum() + "), woont op " +
-                        "adres " + id + ": " + straat + " " + huisnummer + ", " + postcode + ", " + woonplaats;
-            }
+        if (tussenvoegsel == null) {
+            tussenvoegsel = "";
+        } else {
+            tussenvoegsel += " ";
         }
-        return "Adres " + id + " (Reiziger " + reiziger_id + "): " + straat + " " + huisnummer + ", " + postcode + ", " + woonplaats;
+
+        return "Reiziger " + reiziger.getId() + ": " + reiziger.getVoorletters() + ". " + tussenvoegsel + reiziger.getAchternaam() + " (" + reiziger.getGeboortedatum() + "), woont op " +
+                "adres " + id + ": " + straat + " " + huisnummer + ", " + postcode + ", " + woonplaats;
     }
 }

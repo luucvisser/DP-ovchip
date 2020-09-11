@@ -1,4 +1,5 @@
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Reiziger {
@@ -10,21 +11,14 @@ public class Reiziger {
 
     private Adres adres;
 
+    List<OVChipkaart> OVChipkaarten = new ArrayList<>();
+
     public Reiziger(int id, String voorletters, String tussenvoegsel, String achternaam, Date geboortedatum) {
-        this.id = id;
-        this.voorletters = voorletters;
-        this.tussenvoegsel = tussenvoegsel;
-        this.achternaam = achternaam;
-        this.geboortedatum = geboortedatum;
-
-        AdresDAOPsql adao = new AdresDAOPsql();
-        List<Adres> adresLijst = adao.findAll();
-
-        for (var a : adresLijst) {
-            if (a.getReiziger_id() == id) {
-                this.adres = a;
-            }
-        }
+            this.id = id;
+            this.voorletters = voorletters;
+            this.tussenvoegsel = tussenvoegsel;
+            this.achternaam = achternaam;
+            this.geboortedatum = geboortedatum;
     }
 
     public int getId() {
@@ -47,6 +41,12 @@ public class Reiziger {
         return geboortedatum;
     }
 
+    public Adres getAdres() { return adres; }
+
+    public List<OVChipkaart> getOVChipkaarten() {
+        return OVChipkaarten;
+    }
+
     public void setId(int id) {
         this.id = id;
     }
@@ -66,6 +66,10 @@ public class Reiziger {
     public void setGeboortedatum(Date geboortedatum) {
         this.geboortedatum = geboortedatum;
     }
+
+    public void setAdres(Adres adres) { this.adres = adres; }
+
+    public void setOVChipkaarten(OVChipkaart ov) { this.OVChipkaarten.add(ov); }
 
     public String toString() {
         if (tussenvoegsel == null) {
