@@ -1,3 +1,5 @@
+package domein;
+
 import java.sql.SQLException;
 
 public class Adres {
@@ -9,6 +11,7 @@ public class Adres {
 
     private Reiziger reiziger;
 
+    // Maakt een adres object aan
     public Adres(int id, String postcode, String huisnummer, String straat, String woonplaats, Reiziger reiziger) throws SQLException {
         this.id = id;
         this.postcode = postcode;

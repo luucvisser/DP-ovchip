@@ -1,3 +1,8 @@
+package domein;
+
+import domein.Adres;
+import domein.OVChipkaart;
+
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +18,7 @@ public class Reiziger {
 
     List<OVChipkaart> OVChipkaarten = new ArrayList<>();
 
+    // Maakt een reiziger object aan
     public Reiziger(int id, String voorletters, String tussenvoegsel, String achternaam, Date geboortedatum) {
             this.id = id;
             this.voorletters = voorletters;
@@ -79,10 +85,19 @@ public class Reiziger {
             tussenvoegsel += " ";
         }
 
+        String output = "Reiziger " + id + ": " + voorletters + ". " + tussenvoegsel + achternaam + " (" + geboortedatum + ")";
+
         if (adres != null) {
-            return  "Reiziger " + id + ": " + voorletters + ". " + tussenvoegsel + achternaam + " (" + geboortedatum + "), woont op " +
-                    "adres " + adres.getId() + ": " + adres.getStraat() + " " + adres.getHuisnummer() + ", " + adres.getPostcode() + ", " + adres.getWoonplaats();
+            output += ", woont op adres " + adres.getId() + ": " + adres.getStraat() + " " + adres.getHuisnummer() + ", " + adres.getPostcode() + ", " + adres.getWoonplaats();
         }
-        return "Reiziger " + id + ": " + voorletters + ". " + tussenvoegsel + achternaam + " (" + geboortedatum + ")";
+
+        if (!OVChipkaarten.isEmpty()) {
+            output += " en heeft:";
+            for (OVChipkaart ov : OVChipkaarten) {
+                output += "\n      OV Chipkaart " + ov.getNummer() + " (geldig tot: " + ov.getGeldig_tot() + ") voor klasse " + ov.getKlasse() + ", met een saldo van " + ov.getSaldo();
+            }
+        }
+
+        return output;
     }
 }

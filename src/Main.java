@@ -1,4 +1,13 @@
+import dao.AdresDAO;
+import dao.OVChipkaartDAO;
+import dao.ReizigerDAO;
+import daopsql.AdresDAOPsql;
+import daopsql.OVChipkaartDAOPsql;
+import daopsql.ReizigerDAOPsql;
+import domein.Adres;
+import domein.OVChipkaart;
 import dbconnection.DBConnection;
+import domein.Reiziger;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -21,11 +30,11 @@ public class Main {
     }
 
     private static void testReizigerDAO(ReizigerDAO rdao) throws SQLException {
-        System.out.println("\n---------- Test ReizigerDAO -------------");
+        System.out.println("\n---------- Test dao.ReizigerDAO -------------");
 
         // Haal alle reizigers op uit de database
         List<Reiziger> reizigers = rdao.findAll();
-        System.out.println("[Test] ReizigerDAO.findAll() geeft de volgende reizigers:");
+        System.out.println("[Test] dao.ReizigerDAO.findAll() geeft de volgende reizigers:");
         for (Reiziger r : reizigers) {
             System.out.println(r);
         }
@@ -34,7 +43,7 @@ public class Main {
         // Maak een nieuwe reiziger aan en persisteer deze in de database
         String gbdatum = "1981-03-14";
         Reiziger sietske = new Reiziger(77, "S", "", "Boers", java.sql.Date.valueOf(gbdatum));
-        System.out.print("\n[Test] Eerst " + reizigers.size() + " reizigers, na ReizigerDAO.save() ");
+        System.out.print("\n[Test] Eerst " + reizigers.size() + " reizigers, na dao.ReizigerDAO.save() ");
         rdao.save(sietske);
         reizigers = rdao.findAll();
         System.out.println(reizigers.size() + " reizigers\n");
@@ -42,13 +51,13 @@ public class Main {
 
         // Update een reiziger en persisteer deze in de database
         sietske.setTussenvoegsel("de");
-        System.out.println("[Test] Voor ReizigerDAO.update() :  " + rdao.findById(77));
+        System.out.println("[Test] Voor dao.ReizigerDAO.update() :  " + rdao.findById(77));
         rdao.update(sietske);
-        System.out.println("       Na ReizigerDAO.update()   :  " + rdao.findById(77));
+        System.out.println("       Na dao.ReizigerDAO.update()   :  " + rdao.findById(77));
 
 
         // Verwijder een reiziger en persisteer deze in de database
-        System.out.print("\n[Test] Eerst " + reizigers.size() + " reizigers, na ReizigerDAO.delete() ");
+        System.out.print("\n[Test] Eerst " + reizigers.size() + " reizigers, na dao.ReizigerDAO.delete() ");
         rdao.delete(sietske);
         reizigers = rdao.findAll();
         System.out.println(reizigers.size() + " reizigers\n");
@@ -56,13 +65,13 @@ public class Main {
 
         // Haal een reiziger aan de hand van zijn ID op uit de database
         Reiziger reiziger = rdao.findById(1);
-        System.out.println("[Test] ReizigerDAO.findById() geeft de volgende reiziger:");
+        System.out.println("[Test] dao.ReizigerDAO.findById() geeft de volgende reiziger:");
         System.out.println(reiziger);
 
 
         // Haal alle reizigers met een specifieke geboortedatum op uit de database
         List<Reiziger> reizigers2 = rdao.findByGbdatum("2002-12-03");
-        System.out.println("\n[Test] ReizigerDAO.findByGbdatum() geeft de volgende reizigers:");
+        System.out.println("\n[Test] dao.ReizigerDAO.findByGbdatum() geeft de volgende reizigers:");
         for (Reiziger r2 : reizigers2) {
             System.out.println(r2);
         }
@@ -70,9 +79,9 @@ public class Main {
     }
 
     private static void testAdresDAO(AdresDAO adao, ReizigerDAO rdao) throws SQLException {
-        System.out.println("\n---------- Test AdresDAO -------------");
+        System.out.println("\n---------- Test dao.AdresDAO -------------");
 
-        // Reiziger om mee te testen (geen test)
+        // Domein.Reiziger om mee te testen (geen test)
         String gbdatum = "1981-03-14";
         Reiziger testReiziger = new Reiziger(6, "T", "van", "Hier", java.sql.Date.valueOf(gbdatum));
         rdao.save(testReiziger);
@@ -80,7 +89,7 @@ public class Main {
 
         // Haal alle adressen op uit de database
         List<Adres> adressen = adao.findAll();
-        System.out.println("[Test] AdresDAO.findAll() geeft de volgende adressen:");
+        System.out.println("[Test] dao.AdresDAO.findAll() geeft de volgende adressen:");
         for (Adres a : adressen) {
             System.out.println(a);
         }
@@ -88,7 +97,7 @@ public class Main {
 
         // Maak een nieuw adres aan en persisteer deze in de database
         Adres testAdres = new Adres(6, "2113CT", "15", "Heidelberglaan", "Utrecht", testReiziger);
-        System.out.print("\n[Test] Eerst " + adressen.size() + " adressen, na AdresDAO.save() ");
+        System.out.print("\n[Test] Eerst " + adressen.size() + " adressen, na dao.AdresDAO.save() ");
         adao.save(testAdres);
         adressen = adao.findAll();
         System.out.println(adressen.size() + " adressen\n");
@@ -96,19 +105,19 @@ public class Main {
 
         // Update een adres en persisteer deze in de database
         testAdres.setHuisnummer("20");
-        System.out.println("[Test] Voor AdresDAO.update() :  " + adao.findByReiziger(testReiziger));
+        System.out.println("[Test] Voor dao.AdresDAO.update() :  " + adao.findByReiziger(testReiziger));
         adao.update(testAdres);
-        System.out.println("       Na AdresDAO.update()   :  " + adao.findByReiziger(testReiziger));
+        System.out.println("       Na dao.AdresDAO.update()   :  " + adao.findByReiziger(testReiziger));
 
 
         // Haal een adres aan de hand van een reiziger op uit de database
         Adres adres = adao.findByReiziger(testReiziger);
-        System.out.println("\n[Test] AdresDAO.findByReiziger() geeft het volgende adres:");
+        System.out.println("\n[Test] dao.AdresDAO.findByReiziger() geeft het volgende adres:");
         System.out.println(adres);
 
 
         // Verwijder een adres en persisteer deze in de database
-        System.out.print("\n[Test] Eerst " + adressen.size() + " adressen, na AdresDAO.delete() ");
+        System.out.print("\n[Test] Eerst " + adressen.size() + " adressen, na dao.AdresDAO.delete() ");
         adao.delete(testAdres);
         adressen = adao.findAll();
         System.out.println(adressen.size() + " adressen");
@@ -119,9 +128,9 @@ public class Main {
     }
 
     private static void testOVChipkaartDAO(OVChipkaartDAO ovdao, ReizigerDAO rdao) throws SQLException {
-        System.out.println("\n---------- Test OVChipkaartDAO -------------");
+        System.out.println("\n---------- Test dao.OVChipkaartDAO -------------");
 
-        // Reiziger om mee te testen (geen test)
+        // Domein.Reiziger om mee te testen (geen test)
         String gbdatum = "1981-03-14";
         Reiziger testReiziger = new Reiziger(6, "T", "van", "Hier", java.sql.Date.valueOf(gbdatum));
         rdao.save(testReiziger);
@@ -129,7 +138,7 @@ public class Main {
 
         // Haal alle OV chipkaarten op uit de database
         List<OVChipkaart> OVChipkaarten = ovdao.findAll();
-        System.out.println("[Test] OVChipkaartDAO.findAll() geeft de volgende OV chipkaarten:");
+        System.out.println("[Test] dao.OVChipkaartDAO.findAll() geeft de volgende OV chipkaarten:");
         for (OVChipkaart ov : OVChipkaarten) {
             System.out.println(ov);
         }
@@ -138,7 +147,7 @@ public class Main {
         // Maak een nieuwe OV chipkaart aan en persisteer deze in de database
         String geldig_tot = "2022-06-02";
         OVChipkaart testOV = new OVChipkaart(6, java.sql.Date.valueOf(geldig_tot), 2, 62.0, testReiziger);
-        System.out.print("\n[Test] Eerst " + OVChipkaarten.size() + " OV chipkaarten, na OVChipkaartDAO.save() ");
+        System.out.print("\n[Test] Eerst " + OVChipkaarten.size() + " OV chipkaarten, na dao.OVChipkaartDAO.save() ");
         ovdao.save(testOV);
         OVChipkaarten = ovdao.findAll();
         System.out.println(OVChipkaarten.size() + " OV chipkaarten\n");
@@ -146,21 +155,21 @@ public class Main {
 
         // Update een OV chipkaart en persisteer deze in de database
         testOV.setKlasse(1);
-        System.out.println("[Test] Voor OVChipkaartDAO.update() :  " + ovdao.findByReiziger(testReiziger));
+        System.out.println("[Test] Voor dao.OVChipkaartDAO.update() :  " + ovdao.findByReiziger(testReiziger));
         ovdao.update(testOV);
-        System.out.println("       Na OVChipkaartDAO.update()   :  " + ovdao.findByReiziger(testReiziger));
+        System.out.println("       Na dao.OVChipkaartDAO.update()   :  " + ovdao.findByReiziger(testReiziger));
 
 
         // Haal een OV chipkaart aan de hand van een reiziger op uit de database
         List<OVChipkaart> MijnOVChipkaarten = ovdao.findByReiziger(testReiziger);
-        System.out.println("\n[Test] OVChipkaartDAO.findByReiziger() geeft de volgende OV chipkaarten:");
+        System.out.println("\n[Test] dao.OVChipkaartDAO.findByReiziger() geeft de volgende OV chipkaarten:");
         for (OVChipkaart ov : MijnOVChipkaarten) {
             System.out.println(ov);
         }
 
 
         // Verwijder een OV chipkaart en persisteer deze in de database
-        System.out.print("\n[Test] Eerst " + OVChipkaarten.size() + " OV chipkaarten, na OVChipkaartDAO.delete() ");
+        System.out.print("\n[Test] Eerst " + OVChipkaarten.size() + " OV chipkaarten, na dao.OVChipkaartDAO.delete() ");
         ovdao.delete(testOV);
         OVChipkaarten = ovdao.findAll();
         System.out.println(OVChipkaarten.size() + " OV chipkaarten");

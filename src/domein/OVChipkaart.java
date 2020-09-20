@@ -1,3 +1,5 @@
+package domein;
+
 import java.sql.Date;
 
 public class OVChipkaart {
@@ -8,6 +10,7 @@ public class OVChipkaart {
 
     private Reiziger reiziger;
 
+    // Maakt een OV Chipkaart object aan
     public OVChipkaart(int nummer, Date geldig_tot, int klasse, Double saldo, Reiziger reiziger) {
         this.nummer = nummer;
         this.geldig_tot = geldig_tot;
