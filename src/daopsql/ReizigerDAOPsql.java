@@ -11,6 +11,8 @@ import java.util.List;
 
 public class ReizigerDAOPsql implements ReizigerDAO {
     protected Connection connection;
+    private AdresDAOPsql adao;
+    private OVChipkaartDAOPsql ovdao;
 
     // Constructor (krijgt de database connectie mee zodat die overal in de file gebruikt kan worden)
     public ReizigerDAOPsql(Connection connection) {
@@ -30,18 +32,6 @@ public class ReizigerDAOPsql implements ReizigerDAO {
         Statement stmt = connection.createStatement();
         stmt.executeUpdate("INSERT INTO reiziger (reiziger_id, voorletters, tussenvoegsel, achternaam, geboortedatum) VALUES (" + id + ", '" + voorletters + "', '" + tussenvoegsel + "', '" + achternaam + "', '" + geboortedatum + "')");
 
-        // Breidt het reiziger object uit met zijn adres
-        AdresDAOPsql adao = new AdresDAOPsql(connection);
-        Adres adres = adao.findByReiziger(reiziger);
-        reiziger.setAdres(adres);
-
-        // Breidt het reiziger object uit met zijn OV chipkaarten
-        OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
-        List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(reiziger);
-        for (OVChipkaart ov : OVChipkaarten) {
-            reiziger.setOVChipkaarten(ov);
-        }
-
         stmt.close();
 
         return true;
@@ -58,33 +48,35 @@ public class ReizigerDAOPsql implements ReizigerDAO {
 
         // Update de database met de nieuwe gegevens
         Statement stmt = connection.createStatement();
-        stmt.executeUpdate("UPDATE reiziger SET reiziger_id = " + id + ", voorletters = '" + voorletters + "', tussenvoegsel = '" + tussenvoegsel + "', achternaam = '" + achternaam + "', geboortedatum = '" + geboortedatum + "' WHERE reiziger_id = " + id);
-
-        // Breidt het reiziger object uit met zijn adres
-        AdresDAOPsql adao = new AdresDAOPsql(connection);
-        Adres adres = adao.findByReiziger(reiziger);
-        reiziger.setAdres(adres);
-
-        // Breidt het reiziger object uit met zijn OV chipkaarten
-        OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
-        List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(reiziger);
-        for (OVChipkaart ov : OVChipkaarten) {
-            reiziger.setOVChipkaarten(ov);
-        }
+        stmt.executeUpdate("UPDATE reiziger SET voorletters = '" + voorletters + "', tussenvoegsel = '" + tussenvoegsel + "', achternaam = '" + achternaam + "', geboortedatum = '" + geboortedatum + "' WHERE reiziger_id = " + id);
 
         stmt.close();
 
         return true;
     }
 
-    // Verwijderd het meeegegeven object uit de database
+    // Verwijderd het meegegeven object uit de database
     @Override
     public boolean delete(Reiziger reiziger) throws SQLException {
         int id = reiziger.getId();
 
+        // Moet uitgebreidt worden, OV chipkaarten moeten ook verwijderd worden
         // Doet de delete query op de database
         Statement stmt = connection.createStatement();
         stmt.executeUpdate("DELETE FROM reiziger WHERE reiziger_id = " + id);
+
+        // Verwijderd het adres van de reiziger
+        Adres adres = reiziger.getAdres();
+        if (adres != null) {
+            adao.delete(adres);
+        }
+
+        // Verwijderd de OV Chipkaarten van de reiziger
+        if (!reiziger.getOVChipkaarten().isEmpty()) {
+            for (OVChipkaart ov : reiziger.getOVChipkaarten()) {
+                ovdao.delete(ov);
+            }
+        }
 
         stmt.close();
 
@@ -112,16 +104,18 @@ public class ReizigerDAOPsql implements ReizigerDAO {
             // Zet de reiziger in een reiziger object
             Reiziger r = new Reiziger(reiziger_id, voorletter, tussenvoegsel, achternaam, geboortedatum);
 
-            // Breidt het reiziger object uit met zijn adres
-            AdresDAOPsql adao = new AdresDAOPsql(connection);
+            // Set het adres van de reiziger
             Adres adres = adao.findByReiziger(r);
-            r.setAdres(adres);
+            if (adres != null) {
+                r.setAdres(adres);
+            }
 
-            // Breidt het reiziger object uit met zijn OV chipkaart
-            OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+            // Set de OV chipkaarten van de reiziger
             List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(r);
-            for (OVChipkaart ov : OVChipkaarten) {
-                r.setOVChipkaarten(ov);
+            if (!OVChipkaarten.isEmpty()) {
+                for (OVChipkaart ov : OVChipkaarten) {
+                    r.setOVChipkaarten(ov);
+                }
             }
 
             ps.close();
@@ -157,16 +151,18 @@ public class ReizigerDAOPsql implements ReizigerDAO {
             // Zet de reiziger in een reiziger object
             Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
 
-            // Breidt het reiziger object uit met zijn adres
-            AdresDAOPsql adao = new AdresDAOPsql(connection);
+            // Set het adres van de reiziger
             Adres adres = adao.findByReiziger(r);
-            r.setAdres(adres);
+            if (adres != null) {
+                r.setAdres(adres);
+            }
 
-            // Breidt het reiziger object uit met zijn OV chipkaart
-            OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+            // Set de OV chipkaarten van de reiziger
             List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(r);
-            for (OVChipkaart ov : OVChipkaarten) {
-                r.setOVChipkaarten(ov);
+            if (!OVChipkaarten.isEmpty()) {
+                for (OVChipkaart ov : OVChipkaarten) {
+                    r.setOVChipkaarten(ov);
+                }
             }
 
             lijst.add(r);
@@ -201,16 +197,18 @@ public class ReizigerDAOPsql implements ReizigerDAO {
             // Zet de reiziger in een reiziger object
             Reiziger r = new Reiziger(id, voorletter, tussenvoegsel, achternaam, geboortedatum);
 
-            // Breidt het reiziger object uit met zijn adres
-            AdresDAOPsql adao = new AdresDAOPsql(connection);
+            // Set het adres van de reiziger
             Adres adres = adao.findByReiziger(r);
-            r.setAdres(adres);
+            if (adres != null) {
+                r.setAdres(adres);
+            }
 
-            // Breidt het reiziger object uit met zijn OV chipkaart
-            OVChipkaartDAOPsql ovdao = new OVChipkaartDAOPsql(connection);
+            // Set de OV chipkaarten van de reiziger
             List<OVChipkaart> OVChipkaarten = ovdao.findByReiziger(r);
-            for (OVChipkaart ov : OVChipkaarten) {
-                r.setOVChipkaarten(ov);
+            if (!OVChipkaarten.isEmpty()) {
+                for (OVChipkaart ov : OVChipkaarten) {
+                    r.setOVChipkaarten(ov);
+                }
             }
 
             lijst.add(r);
@@ -220,5 +218,13 @@ public class ReizigerDAOPsql implements ReizigerDAO {
         rs.close();
 
         return lijst;
+    }
+
+    public void setAdao(AdresDAOPsql adao) {
+        this.adao = adao;
+    }
+
+    public void setOvdao(OVChipkaartDAOPsql ovdao) {
+        this.ovdao = ovdao;
     }
 }

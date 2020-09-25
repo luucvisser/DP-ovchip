@@ -2,14 +2,18 @@ package daopsql;
 
 import dao.OVChipkaartDAO;
 import domein.OVChipkaart;
+import domein.Product;
 import domein.Reiziger;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 public class OVChipkaartDAOPsql implements OVChipkaartDAO {
     private Connection connection;
+    private ReizigerDAOPsql rdao;
+    private ProductDAOPsql pdao;
 
     // Constructor (krijgt de database connectie mee zodat die overal in de file gebruikt kan worden)
     public OVChipkaartDAOPsql(Connection connection) {
@@ -29,6 +33,14 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
         Statement stmt = connection.createStatement();
         stmt.executeUpdate("INSERT INTO ov_chipkaart (kaart_nummer, geldig_tot, klasse, saldo, reiziger_id) VALUES (" + nummer + ", '" + geldig_tot + "', " + klasse + ", " + saldo + ", " + reiziger_id + ")");
 
+        // Slaat de relaties van de OV chipkaart op
+        if (!ov.getProducten().isEmpty()) {
+            for (Product product : ov.getProducten()) {
+                java.util.Date vandaag = Calendar.getInstance().getTime();
+                stmt.executeUpdate("INSERT INTO ov_chipkaart_product (kaart_nummer, product_nummer, status, last_update) VALUES (" + ov.getNummer() + ", " + product.getNummer() + ", 'actief', '" + vandaag + "')");
+            }
+        }
+
         stmt.close();
 
         return true;
@@ -45,20 +57,41 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
 
         // Update de database met de nieuwe gegevens
         Statement stmt = connection.createStatement();
-        stmt.executeUpdate("UPDATE ov_chipkaart SET kaart_nummer = " + nummer + ", geldig_tot = '" + geldig_tot + "', klasse = " + klasse + ", saldo = " + saldo + ", reiziger_id = " + reiziger_id + " WHERE kaart_nummer = " + nummer);
+        stmt.executeUpdate("UPDATE ov_chipkaart SET geldig_tot = '" + geldig_tot + "', klasse = " + klasse + ", saldo = " + saldo + ", reiziger_id = " + reiziger_id + " WHERE kaart_nummer = " + nummer);
+
+        // Update de OV Chipkaarten met het aangepaste product
+        if (!ov.getProducten().isEmpty()) {
+            for (Product p : ov.getProducten()) {
+                for (OVChipkaart OVChipkaart : p.getOVChipkaarten()) {
+                    if (ov.getNummer() == OVChipkaart.getNummer()) {
+                        p.removeOVChipkaart(OVChipkaart);
+                        p.setOVChipkaarten(ov);
+                    }
+                }
+            }
+        }
 
         stmt.close();
 
         return true;
     }
 
-    // Verwijderd het meeegegeven object uit de database
+    // Verwijderd het meegegeven object uit de database
     @Override
     public boolean delete(OVChipkaart ov) throws SQLException {
         int nummer = ov.getNummer();
 
-        // Doet de delete query op de database
+        // Maak een statement
         Statement stmt = connection.createStatement();
+
+        // Verwijderd alle relaties van de OV chipkaart
+        if (!ov.getProducten().isEmpty()) {
+            for (Product p : ov.getProducten()) {
+                stmt.executeUpdate("DELETE FROM ov_chipkaart_product WHERE kaart_nummer = " + nummer + " AND product_nummer = " + p.getNummer());
+            }
+        }
+
+        // Verwijder de OV chipkaart zelf
         stmt.executeUpdate("DELETE FROM ov_chipkaart WHERE kaart_nummer = " + nummer);
 
         stmt.close();
@@ -66,7 +99,7 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
         return true;
     }
 
-    // Vindt een adres aan de hand van een reiziger
+    // Vindt een OV chipkaart aan de hand van een reiziger
     @Override
     public List<OVChipkaart> findByReiziger(Reiziger reiziger) throws SQLException {
         // Maakt een query
@@ -87,6 +120,14 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
 
             // Zet de OV chipkaart in een OVChipkaart object
             OVChipkaart ov = new OVChipkaart(nummer, geldig_tot, klasse, saldo, reiziger);
+
+            // Set de producten van de OV chipkaart
+            List<Product> producten = pdao.findByOVChipkaart(ov);
+            if (!producten.isEmpty()) {
+                for (Product p : producten) {
+                    ov.setProducten(p);
+                }
+            }
 
             OVChipkaarten.add(ov);
         }
@@ -119,12 +160,19 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
 
             // Zoekt een reiziger aan de hand van zijn ID en zet hem in een lijst
             // Je hebt namelijk een reiziger object nodig om een OV Chipkaart object aan te maken
-            ReizigerDAOPsql rdao = new ReizigerDAOPsql(connection);
             List<Reiziger> lijst = rdao.findAll();
             for (var r : lijst) {
                 if (r.getId() == reiziger_id) {
                     // Zet de OV chipkaart in een object
                     OVChipkaart ov = new OVChipkaart(nummer, geldig_tot, klasse, saldo, r);
+
+                    // Set de producten van de OV chipkaart
+                    List<Product> producten = pdao.findByOVChipkaart(ov);
+                    if (!producten.isEmpty()) {
+                        for (Product p : producten) {
+                            ov.setProducten(p);
+                        }
+                    }
 
                     OVChipkaarten.add(ov);
                 }
@@ -135,5 +183,13 @@ public class OVChipkaartDAOPsql implements OVChipkaartDAO {
         rs.close();
 
         return OVChipkaarten;
+    }
+
+    public void setRdao(ReizigerDAOPsql rdao) {
+        this.rdao = rdao;
+    }
+
+    public void setPdao(ProductDAOPsql pdao) {
+        this.pdao = pdao;
     }
 }

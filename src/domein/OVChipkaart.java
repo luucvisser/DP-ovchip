@@ -1,6 +1,8 @@
 package domein;
 
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OVChipkaart {
     private int nummer;
@@ -9,6 +11,7 @@ public class OVChipkaart {
     private Double saldo;
 
     private Reiziger reiziger;
+    private List<Product> producten = new ArrayList<>();
 
     // Maakt een OV Chipkaart object aan
     public OVChipkaart(int nummer, Date geldig_tot, int klasse, Double saldo, Reiziger reiziger) {
@@ -29,6 +32,8 @@ public class OVChipkaart {
 
     public Reiziger getReiziger() { return reiziger; }
 
+    public List<Product> getProducten() { return producten; }
+
     public void setNummer(int nummer) { this.nummer = nummer; }
 
     public void setGeldig_tot(Date geldig_tot) { this.geldig_tot = geldig_tot; }
@@ -39,6 +44,10 @@ public class OVChipkaart {
 
     public void setReiziger(Reiziger reiziger) { this.reiziger = reiziger; }
 
+    public void setProducten(Product product) { this.producten.add(product); }
+
+    public void removeProduct(Product product) { this.producten.remove(product); }
+
     public String toString() {
         String tussenvoegsel = reiziger.getTussenvoegsel();
 
@@ -48,7 +57,16 @@ public class OVChipkaart {
             tussenvoegsel += " ";
         }
 
-        return "OV Chipkaart " + nummer + " (geldig tot: " + geldig_tot + ") heeft een saldo van " + saldo + " en mag in klasse " + klasse + ". " +
-                "De eigenaar is reiziger " + reiziger.getId() + ": " + reiziger.getVoorletters() + ". " + tussenvoegsel + reiziger.getAchternaam() + " (" + reiziger.getGeboortedatum() + ")";
+        String output = "OV Chipkaart " + nummer + " (geldig tot: " + geldig_tot + ") met een saldo van " + saldo + " en toegang tot klasse " + klasse +
+                        ", wordt beheert door reiziger " + reiziger.getId() + ": " + reiziger.getVoorletters() + ". " + tussenvoegsel + reiziger.getAchternaam() + " (" + reiziger.getGeboortedatum() + ")";
+
+        if (!producten.isEmpty()) {
+            output += " en maakt gebruik van:";
+            for (Product p : producten) {
+                output += "\n      Product " + p.getNummer() + ": " + p.getNaam() + " (" + p.getBeschrijving() + ") met een prijs van " + p.getPrijs();
+            }
+        }
+
+        return output;
     }
 }

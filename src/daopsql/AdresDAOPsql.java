@@ -10,6 +10,7 @@ import java.util.List;
 
 public class AdresDAOPsql implements AdresDAO {
     protected Connection connection;
+    private ReizigerDAOPsql rdao;
 
     // Constructor (krijgt de database connectie mee zodat die overal in de file gebruikt kan worden)
     public AdresDAOPsql(Connection connection) {
@@ -47,14 +48,14 @@ public class AdresDAOPsql implements AdresDAO {
 
         // Update de database met de nieuwe gegevens
         Statement stmt = connection.createStatement();
-        stmt.executeUpdate("UPDATE adres SET adres_id = " + id + ", postcode = '" + postcode + "', huisnummer = '" + huisnummer + "', straat = '" + straat + "', woonplaats = '" + woonplaats + "', reiziger_id = " + reiziger_id + " WHERE adres_id = " + id);
+        stmt.executeUpdate("UPDATE adres SET postcode = '" + postcode + "', huisnummer = '" + huisnummer + "', straat = '" + straat + "', woonplaats = '" + woonplaats + "', reiziger_id = " + reiziger_id + " WHERE adres_id = " + id);
 
         stmt.close();
 
         return true;
     }
 
-    // Verwijderd het meeegegeven object uit de database
+    // Verwijderd het meegegeven object uit de database
     @Override
     public boolean delete(Adres adres) throws SQLException {
         int id = adres.getId();
@@ -122,7 +123,6 @@ public class AdresDAOPsql implements AdresDAO {
 
             // Zoekt een reiziger aan de hand van zijn ID en zet hem in een lijst
             // Je hebt namelijk een reiziger object nodig om een adres object aan te maken
-            ReizigerDAOPsql rdao = new ReizigerDAOPsql(connection);
             List<Reiziger> lijst = rdao.findAll();
 
             // Voor elke reiziger in de lijst
@@ -139,5 +139,9 @@ public class AdresDAOPsql implements AdresDAO {
         rs.close();
 
         return adressen;
+    }
+
+    public void setRdao(ReizigerDAOPsql rdao) {
+        this.rdao = rdao;
     }
 }

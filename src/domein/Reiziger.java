@@ -15,8 +15,7 @@ public class Reiziger {
     private Date geboortedatum;
 
     private Adres adres;
-
-    List<OVChipkaart> OVChipkaarten = new ArrayList<>();
+    private List<OVChipkaart> OVChipkaarten = new ArrayList<>();
 
     // Maakt een reiziger object aan
     public Reiziger(int id, String voorletters, String tussenvoegsel, String achternaam, Date geboortedatum) {
@@ -76,6 +75,8 @@ public class Reiziger {
     public void setAdres(Adres adres) { this.adres = adres; }
 
     public void setOVChipkaarten(OVChipkaart ov) { this.OVChipkaarten.add(ov); }
+
+    public void removeOVChipkaart(OVChipkaart ov) { this.OVChipkaarten.remove(ov); }
 
     public String toString() {
         if (tussenvoegsel == null) {

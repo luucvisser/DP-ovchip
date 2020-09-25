@@ -79,7 +79,7 @@ public class Adres {
             tussenvoegsel += " ";
         }
 
-        return "Reiziger " + reiziger.getId() + ": " + reiziger.getVoorletters() + ". " + tussenvoegsel + reiziger.getAchternaam() + " (" + reiziger.getGeboortedatum() + "), woont op " +
-                "adres " + id + ": " + straat + " " + huisnummer + ", " + postcode + ", " + woonplaats;
+        return "Adres " + id + ": " + straat + " " + huisnummer + ", " + postcode + ", " + woonplaats +
+                " wordt bewoond door Reiziger "  + reiziger.getId() + ": " + reiziger.getVoorletters() + ". " + tussenvoegsel + reiziger.getAchternaam() + " (" + reiziger.getGeboortedatum() + ")";
     }
 }
