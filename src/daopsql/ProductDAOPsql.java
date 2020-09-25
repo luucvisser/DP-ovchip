@@ -53,16 +53,56 @@ public class ProductDAOPsql implements ProductDAO {
         Statement stmt = connection.createStatement();
         stmt.executeUpdate("UPDATE product SET naam = '" + naam + "', beschrijving = '" + beschrijving + "', prijs = " + prijs + " WHERE product_nummer = " + nummer);
 
-        // Update de OV Chipkaarten met het aangepaste product
+        // Als het product relaties heeft
         if (!product.getOVChipkaarten().isEmpty()) {
-            for (OVChipkaart ov : product.getOVChipkaarten()) {
-                for (Product p : ov.getProducten()) {
-                    if (p.getNummer() == product.getNummer()) {
-                        ov.removeProduct(p);
-                        ov.setProducten(product);
+            // Maakt een query die zorgt dat alle relaties van het product uit de database gehaald worden
+            String query = "SELECT kaart_nummer FROM ov_chipkaart_product WHERE product_nummer = " + nummer;
+
+            // Voert de query uit op de database
+            PreparedStatement ps = connection.prepareStatement(query);
+            ResultSet rs = ps.executeQuery();
+
+            // Maakt een lijst aan waar de kaart_nummers in komen van alle OV chipkaarten uit de query
+            List<Integer> kaartnummersUitQuery = new ArrayList<>();
+
+            // Maakt een lijst aan waar de kaart_nummers in komen van alle OV chipkaarten uit de OVChipkaarten lijst van product
+            List<Integer> kaartnummersUitLijst = new ArrayList<>();
+
+            // Vul de kaartnummersUitLijst
+            for (OVChipkaart OVChipkaart : product.getOVChipkaarten()) {
+                kaartnummersUitLijst.add(OVChipkaart.getNummer());
+            }
+
+            // Als de query van line 59 resultaat heeft
+            while(rs.next()) {
+                int kaart_nummer = rs.getInt(1);
+
+                // Vul de kaartnummersUitQuery lijst
+                kaartnummersUitQuery.add(kaart_nummer);
+
+                // Als int kaart_nummer ook voorkomt in de kaartnummersUitQuery lijst, dan wordt die uit zowel de kaartnummersUitQuery lijst als de kaartnummersUitLijst lijst verwijderd
+                for (OVChipkaart ov : product.getOVChipkaarten()) {
+                    if (kaart_nummer == ov.getNummer()) {
+                        kaartnummersUitQuery.remove(kaart_nummer);
+                        kaartnummersUitLijst.remove(kaart_nummer);
                     }
                 }
             }
+
+            // Alle kaart_nummers die nog overblijven in de kaartnummersUitQuery lijst worden uit de database verwijderd
+            for (int k : kaartnummersUitQuery) {
+                stmt.executeUpdate("DELETE FROM ov_chipkaart_product WHERE kaart_nummer = " + k + " AND product_nummer = " + nummer);
+            }
+
+            // Alle kaart_nummers die nog overblijven in de kaartnummersUitLijst lijst worden in de database toegevoegd
+            for (int k : kaartnummersUitLijst) {
+                java.util.Date vandaag = Calendar.getInstance().getTime();
+                stmt.executeUpdate("INSERT INTO ov_chipkaart_product (kaart_nummer, product_nummer, status, last_update) VALUES (" + k + ", " + nummer + ", 'actief', '" + vandaag + "')");
+            }
+        }
+        // Als het product geen relaties heeft (in het domein), verwijder dan alle bestaande relaties (in de database)
+        else {
+            stmt.executeUpdate("DELETE FROM ov_chipkaart_product WHERE product_nummer = " + nummer);
         }
 
         stmt.close();
